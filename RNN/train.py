@@ -19,7 +19,7 @@ N_EPOCHS = 5
 BATCH_SIZE = 64
 N_LAYERS = 2
 gamma = 10
-theta = 1
+theta = 0.1
 
 if __name__ == '__main__':  
 
@@ -52,16 +52,19 @@ if __name__ == '__main__':
     # Model instance
     
     lstm = LSTM(input_size=N_INPUTS, output_size=N_OUTPUTS, hidden_dim=N_NEURONS, n_layers=N_LAYERS, device=device)
+    regressor = Regressor()
     domain_classifier = Domain_classifier()
     domain_criterion = nn.NLLLoss()
     
     lstm = lstm.to(device)
+    regressor = regressor.to(device)
     domain_classifier = domain_classifier.to(device)
     
     # Loss and optimizer
     criterion = nn.MSELoss()
     optimizer = optim.Adam([{'params': lstm.parameters()},
-                            {'params': domain_classifier.parameters()}], lr=1E-3)   #
+                            {'params': domain_classifier.parameters()},
+                            {'params': regressor.parameters()}], lr=1E-3)   #
 
     # Summary writers
     writer_train = SummaryWriter(PATH + '/train')
@@ -73,6 +76,7 @@ if __name__ == '__main__':
         val_running_loss = 0.0
 
         lstm.train()
+        regressor.train()
         domain_classifier.train()
         
         # steps

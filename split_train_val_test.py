@@ -21,13 +21,14 @@ if not os.path.exists('./RNN/data/target'):
 df = pd.read_csv(os.path.join(root_dir, source_csv_file))
 
 # split train & test
-dftrain, dftest = train_test_split(df, test_size=0.2, random_state=0)
+dftrain, dftest = train_test_split(df, test_size=0.15, random_state=0)
 
-dftrain, dfval = train_test_split(dftrain, test_size=0.125, random_state=0)
+dftrain, dfval = train_test_split(dftrain, test_size=0.17647, random_state=0)
 
-print(dftrain.shape)
-print(dftest.shape)
-print(dfval.shape)
+print('\n##SOURCE##')
+print('Train: {}'.format(dftrain.shape))
+print('Test: {}'.format(dftest.shape))
+print('Val: {}'.format(dfval.shape))
 
 # save csv files
 dftrain.to_csv('./RNN/data/source/flows-train.csv')
@@ -40,11 +41,16 @@ dftest.to_csv('./RNN/data/source/flows-test.csv')
 df = pd.read_csv(os.path.join(root_dir, target_csv_file))
 
 # split train & test
-dftrain, dftest = train_test_split(df, test_size=0.2, random_state=0)
+dftrain, dftest = train_test_split(df, test_size=0.15, random_state=0)
 
-dftrain, dfval = train_test_split(dftrain, test_size=0.125, random_state=0)
+dftrain, dfval = train_test_split(dftrain, test_size=0.17647, random_state=0)
 
 # save csv files
 dftrain.to_csv('./RNN/data/target/flows-train.csv')
 dfval.to_csv('./RNN/data/target/flows-val.csv')
 dftest.to_csv('./RNN/data/target/flows-test.csv')
+
+print('\n##TARGET##')
+print('Train: {}'.format(dftrain.shape))
+print('Test: {}'.format(dftest.shape))
+print('Val: {}'.format(dfval.shape))
