@@ -4,7 +4,8 @@ import torchvision.transforms as transforms
 from torch import nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from networks import FlowCNN, FlowCNNRecons, RNN, LSTM, BiLSTM, Extractor, Domain_classifier
+#from networks import FlowCNN, FlowCNNRecons, RNN, LSTM, BiLSTM, Extractor, Domain_classifier
+from networks import LSTM, Regressor, Domain_classifier
 from dataset import BloodFlow, ToTensor
 from tensorboardX import SummaryWriter
 import numpy as np
@@ -52,8 +53,8 @@ if __name__ == '__main__':
     # Model instance
     
     lstm = LSTM(input_size=N_INPUTS, output_size=N_OUTPUTS, hidden_dim=N_NEURONS, n_layers=N_LAYERS, device=device)
-    regressor = Regressor()
-    domain_classifier = Domain_classifier()
+    regressor = Regressor(input_size=N_NEURONS*BATCH_SIZE, output_size=N_OUTPUTS, hidden_dim=100)
+    domain_classifier = Domain_classifier(input_size=N_NEURONS*BATCH_SIZE, hidden_dim=100)
     domain_criterion = nn.NLLLoss()
     
     lstm = lstm.to(device)
@@ -107,15 +108,26 @@ if __name__ == '__main__':
             source_labels = torch.zeros((input1.size()[0])).type(torch.LongTensor).to(device)
             target_labels = torch.ones((input2.size()[0])).type(torch.LongTensor).to(device)
             
-            # compute the lstm loss of src_feature
-            preds, _ = lstm(input1)
-            preds = preds.view(-1)
-            lstm_loss = criterion(preds, label1)
+            # compute the features of lstm
+            #SOURCE
+            source_features, _ = lstm(input1)
+            source_features = source_features.view(-1)
+            source_preds = regressor(source_features)
+            
+            #TARGET
+            target_features, _ = lstm(input2)
+            target_features = target_features.view(-1)
+            target_preds = regressor(target_features)
+            
+            
+            # compute lstm loss
+            lstm_loss = criterion(source_preds, label1)
+            lstm_loss += criterion(target_preds, label2)
             
             # compute the domain loss of src_feature and target_feature
-            src_preds = domain_classifier(input1, constant)
+            src_preds = domain_classifier(source_features, constant)
             src_preds = src_preds.squeeze()
-            tgt_preds = domain_classifier(input2, constant)
+            tgt_preds = domain_classifier(target_features, constant)
             tgt_preds = tgt_preds.squeeze()
             
             
